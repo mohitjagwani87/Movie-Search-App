@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #222; color: white; }
+        input, button { padding: 10px; margin: 5px; }
+        .movie-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
+        .movie-card { cursor: pointer; background: #333; padding: 15px; border-radius: 10px; width: 200px; }
+        .movie-card img { width: 100%; border-radius: 5px; }
+        .loading { display: none; font-size: 18px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Movie Finder</h1>
+    <input type="text" id="a" placeholder="Enter movie name">
+    <button onclick="d()">Search</button>
+    <p class="loading">Loading...</p>
+    <div class="movie-container" id="b"></div>
+    <div id="details"></div>
+
+    <script>
+        async function d() {
+    let h = document.getElementById('b');
+    let e = document.getElementById('a').value;
+    let loading = document.querySelector('.loading');
+    let details = document.getElementById('details');
+
+
+
+    
+    if (!e) return;
+    h.innerHTML = "";
+    details.innerHTML = "";
+    loading.style.display = "block";
+    try {
+        let f = await fetch(`https://www.omdbapi.com/?s=${e}&apikey=bb745c3b`);
+        let g = await f.json();
+        loading.style.display = "none";
+
+        if (g.Search) {
+            h.innerHTML = "";
+            g.Search.forEach(movie => {
+                let movieCard = document.createElement('div');
+                movieCard.classList.add('movie-card');
+                movieCard.innerHTML = `
+                    <img src="${movie.Poster}" alt="${movie.Title}">
+                    <h3>${movie.Title}</h3>
+                    <p>${movie.Year}</p>
+                `;
+
+                movieCard.addEventListener('click', function () {
+                    getMovieDetails(movie.imdbID);
+                });
+
+                h.appendChild(movieCard);
+            });
+        } else {
+            h.innerHTML = "<p>Movie not found</p>";
+        }
+    } catch (error) {
+        loading.style.display = "none";
+        h.innerHTML = "<p>Something went wrong. Try again.</p>";
+    }
+}
+
+async function getMovieDetails(movieId) {
+    console.log("Fetching details for movie:", movieId);
+    let details = document.getElementById('details');
+    details.innerHTML = "<p>Loading...</p>";
+
+    try {
+        let f = await fetch(`https://www.omdbapi.com/?i=${movieId}&apikey=bb745c3b`);
+        let g = await f.json();
+        console.log("Movie Details Response:", g);
+
+        if (g.Response === "True") {
+            details.innerHTML = `
+                <h2>${g.Title}</h2>
+                <img src="${g.Poster}" alt="${g.Title}" style="width: 200px;">
+                <p><strong>Year:</strong> ${g.Year}</p>
+                <p><strong>Director:</strong> ${g.Director}</p>
+                <p><strong>Cast:</strong> ${g.Actors}</p>
+                <p><strong>Plot:</strong> ${g.Plot}</p>
+                <p><strong>Genre:</strong> ${g.Genre}</p>
+                <p><strong>IMDB Rating:</strong> ${g.imdbRating}</p>`;
+        } else {
+            details.innerHTML = "<p>Movie details not found.</p>";
+        }
+    } catch (error) {
+        console.error("Error fetching movie details:", error);
+        details.innerHTML = "<p>Failed to load movie details.</p>";
+    }
+}
+    </script>
+</body>
+</html>
